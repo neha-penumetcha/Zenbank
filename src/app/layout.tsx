@@ -3,6 +3,7 @@ import './globals.css';
 import { AuthProvider } from '@/hooks/use-auth';
 import { Toaster } from '@/components/ui/toaster';
 import { Inter } from 'next/font/google';
+import { IdleTimeoutProvider } from '@/components/idle-timeout-provider';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -20,8 +21,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`font-body antialiased ${inter.variable}`}>
         <AuthProvider>
-          {children}
-          <Toaster />
+          <IdleTimeoutProvider>
+            {children}
+            <Toaster />
+          </IdleTimeoutProvider>
         </AuthProvider>
       </body>
     </html>
