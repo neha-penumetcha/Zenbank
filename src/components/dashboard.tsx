@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Logo } from '@/components/icons';
-import { LogOut, Eye, EyeOff } from 'lucide-react';
+import { LogOut, Eye, EyeOff, User as UserIcon } from 'lucide-react';
 import { TransactionForm } from './transaction-form';
 import { TransactionHistory } from './transaction-history';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -39,6 +39,14 @@ import {
 import { Input } from './ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const pinSchema = z.object({
   pin: z.string().length(4, { message: 'PIN must be 4 digits.' }),
@@ -104,28 +112,47 @@ export function Dashboard() {
             <h1 className="text-xl font-bold">ZenBank</h1>
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" asChild>
-              <Link href="/profile" className="flex items-center gap-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage
-                    src={`https://api.dicebear.com/8.x/initials/svg?seed=${user.name}`}
-                    alt={user.name}
-                  />
-                  <AvatarFallback>
-                    {user.name?.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="font-medium">{user.username}</span>
-              </Link>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={logout}
-              aria-label="Logout"
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="relative h-10 w-10 rounded-full"
+                >
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage
+                      src={`https://api.dicebear.com/8.x/initials/svg?seed=${user.name}`}
+                      alt={user.name}
+                    />
+                    <AvatarFallback>
+                      {user.name?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {user.name}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      @{user.username}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/profile">
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={logout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
         <main className="flex flex-1 flex-col items-center justify-center p-4 sm:p-6 md:p-8">
