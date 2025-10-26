@@ -38,11 +38,13 @@ const prompt = ai.definePrompt({
   name: 'recommendTransactionAmountPrompt',
   input: {schema: RecommendTransactionAmountInputSchema},
   output: {schema: RecommendTransactionAmountOutputSchema},
-  prompt: `You are an expert financial advisor. You will analyze the user's transaction history and transaction type and determine the amounts they would like to deposit or withdraw.
+  prompt: `You are an expert financial advisor. Your task is to suggest three transaction amounts to a user based on their past behavior.
+Analyze the user's transaction history provided below for the specified transaction type.
+The amounts should be round numbers close to the user's previous transaction amounts. For example, if they often transact around 480, you could suggest 500. If they transact for 1100, you could suggest 1000 or 1200.
 Transaction History: {{{transactionHistory}}}
 Transaction Type: {{{transactionType}}}
 
-Based on this information, what are three different amounts that the user is likely to {{transactionType}}? Do not provide any explanations, just the numbers.
+Based on this, suggest three distinct, rounded amounts for a new {{transactionType}}. Do not provide any explanations, just the numbers.
 If the transaction history is empty, suggest amounts like 500, 1000, and 2000.`,
 });
 
