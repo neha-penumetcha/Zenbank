@@ -9,6 +9,6 @@ export async function getAiSuggestions(input: RecommendTransactionAmountInput): 
   } catch (error) {
     console.error('AI suggestion failed:', error);
     // Return default or empty array on failure
-    return [20, 50, 100];
+    return [500, 1000, 2000];
   }
 }

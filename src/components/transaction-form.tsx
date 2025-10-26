@@ -131,7 +131,7 @@ export function TransactionForm({ type }: TransactionFormProps) {
 
     toast({
       title: 'Transaction Successful',
-      description: `Successfully ${type === 'deposit' ? 'deposited' : 'withdrew'} ${transactionAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}.`,
+      description: `Successfully ${type === 'deposit' ? 'deposited' : 'withdrew'} ${transactionAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}.`,
     });
     
     amountForm.reset();
@@ -159,7 +159,7 @@ export function TransactionForm({ type }: TransactionFormProps) {
                   <FormLabel>Amount</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
                       <Input type="number" placeholder="0.00" className="pl-6" {...field} />
                     </div>
                   </FormControl>
@@ -172,7 +172,7 @@ export function TransactionForm({ type }: TransactionFormProps) {
               <div className="flex flex-wrap items-center gap-2">
                 {suggestions.map((s) => (
                   <Button key={s} type="button" variant="outline" size="sm" onClick={() => handleSuggestionClick(s)}>
-                    ${s}
+                    ₹{s}
                   </Button>
                 ))}
                 <Button type="button" variant="ghost" size="sm" onClick={handleAiSuggest} disabled={isAiLoading}>

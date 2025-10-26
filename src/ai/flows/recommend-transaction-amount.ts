@@ -42,7 +42,8 @@ const prompt = ai.definePrompt({
 Transaction History: {{{transactionHistory}}}
 Transaction Type: {{{transactionType}}}
 
-Based on this information, what are three different amounts that the user is likely to {{transactionType}}? Do not provide any explanations, just the numbers.`,
+Based on this information, what are three different amounts that the user is likely to {{transactionType}}? Do not provide any explanations, just the numbers.
+If the transaction history is empty, suggest amounts like 500, 1000, and 2000.`,
 });
 
 const recommendTransactionAmountFlow = ai.defineFlow(
@@ -53,14 +54,14 @@ const recommendTransactionAmountFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    if (output && output.recommendedAmounts) {
+    if (output && output.recommendedAmounts && output.recommendedAmounts.length > 0) {
       return {
         recommendedAmounts: output.recommendedAmounts,
       };
     } else {
       // If the prompt does not produce recommended amounts, return some default values
       return {
-        recommendedAmounts: [20, 50, 100],
+        recommendedAmounts: [500, 1000, 2000],
       };
     }
   }
