@@ -68,14 +68,26 @@ const recommendTransactionAmountFlow = ai.defineFlow(
     const {output} = await prompt(input);
 
     if (output && output.recommendedAmounts && output.recommendedAmounts.length > 0) {
+      // Basic check to see if the AI is just returning the default values.
+      const isDefault = JSON.stringify(output.recommendedAmounts.sort((a,b) => a-b)) === JSON.stringify([500, 1000, 2000]);
+      if (isDefault) {
+         // Fallback if AI returns default values for a non-empty history
+        const avg = input.transactionHistory.reduce((a, b) => a + b, 0) / input.transactionHistory.length;
+        const suggestion1 = Math.round(avg / 500) * 500;
+        return {
+            recommendedAmounts: [suggestion1, suggestion1 + 500, suggestion1 + 1000].filter(v => v > 0),
+        };
+      }
       return {
         recommendedAmounts: output.recommendedAmounts,
       };
     } else {
       // Fallback in case the AI fails to generate a valid response
-      return {
-        recommendedAmounts: [500, 1000, 2000],
-      };
+        const avg = input.transactionHistory.reduce((a, b) => a + b, 0) / input.transactionHistory.length;
+        const suggestion1 = Math.round(avg / 500) * 500;
+        return {
+            recommendedAmounts: [suggestion1, suggestion1 + 500, suggestion1 + 1000].filter(v => v > 0),
+        };
     }
   }
 );
