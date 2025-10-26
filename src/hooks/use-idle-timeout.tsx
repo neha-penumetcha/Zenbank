@@ -10,13 +10,14 @@ const useIdleTimeout = (
   const [isWarning, setIsWarning] = useState(false);
   const [remainingTime, setRemainingTime] = useState(idleTime);
 
+  const idleTimeout = useRef<NodeJS.Timeout>();
+  const warningTimeout = useRef<NodeJS.Timeout>();
   const countdownInterval = useRef<NodeJS.Timer>();
 
   const stopTimers = useCallback(() => {
-    if (countdownInterval.current) {
-      clearInterval(countdownInterval.current);
-      countdownInterval.current = undefined;
-    }
+    if (idleTimeout.current) clearTimeout(idleTimeout.current);
+    if (warningTimeout.current) clearTimeout(warningTimeout.current);
+    if (countdownInterval.current) clearInterval(countdownInterval.current);
   }, []);
 
   const handleIdle = useCallback(() => {
@@ -24,20 +25,21 @@ const useIdleTimeout = (
     onIdle();
   }, [onIdle, stopTimers]);
 
-  const startCountdown = useCallback(() => {
+  const startTimers = useCallback(() => {
     stopTimers();
     setRemainingTime(idleTime);
+
+    warningTimeout.current = setTimeout(() => {
+      setIsWarning(true);
+    }, idleTime - warningTime);
+
+    idleTimeout.current = setTimeout(handleIdle, idleTime);
 
     countdownInterval.current = setInterval(() => {
       setRemainingTime((prevTime) => {
         const newTime = prevTime - 1000;
-        
-        if (newTime <= warningTime) {
-            setIsWarning(true);
-        }
-        
         if (newTime <= 0) {
-          handleIdle();
+          clearInterval(countdownInterval.current);
           return 0;
         }
         return newTime;
@@ -45,11 +47,10 @@ const useIdleTimeout = (
     }, 1000);
   }, [idleTime, warningTime, stopTimers, handleIdle]);
 
-
   const reset = useCallback(() => {
     setIsWarning(false);
-    startCountdown();
-  }, [startCountdown]);
+    startTimers();
+  }, [startTimers]);
 
   const handleUserActivity = useCallback(() => {
     reset();
@@ -67,10 +68,8 @@ const useIdleTimeout = (
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
-  const formattedRemainingTime = Math.ceil(remainingTime / 1000);
 
-  return { isWarning, remainingTime: formattedRemainingTime, reset };
+  return { isWarning, remainingTime: Math.max(0, Math.ceil(remainingTime / 1000)), reset };
 };
 
 export default useIdleTimeout;

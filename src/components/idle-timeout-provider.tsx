@@ -45,7 +45,7 @@ export function IdleTimeoutProvider({ children }: { children: ReactNode }) {
           <DialogHeader>
             <DialogTitle>Are you still there?</DialogTitle>
             <DialogDescription>
-              You've been inactive for a while. For your security, you will be logged out in {Math.ceil(remainingTime / 1000)} seconds.
+              You've been inactive for a while. For your security, you will be logged out in about a minute.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="sm:justify-between">
