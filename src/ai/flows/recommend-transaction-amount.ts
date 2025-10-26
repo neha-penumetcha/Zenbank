@@ -38,19 +38,17 @@ const prompt = ai.definePrompt({
   name: 'recommendTransactionAmountPrompt',
   input: {schema: RecommendTransactionAmountInputSchema},
   output: {schema: RecommendTransactionAmountOutputSchema},
-  prompt: `You are an expert financial advisor. Your task is to suggest three transaction amounts to a user based on their past behavior for a specific transaction type.
+  prompt: `You are a helpful assistant that suggests transaction amounts. You will be given a user's transaction history for a specific transaction type.
 
-Analyze the user's transaction history provided below for the specified transaction type.
+Your task is to return three rounded, sensible transaction amounts based on the provided history.
 
-1.  **Calculate the average transaction amount** from the history.
-2.  Based on this average, suggest three distinct, rounded amounts for a new {{transactionType}}.
-3.  The suggestions should be close to the user's average. One amount should be slightly lower, one should be near the average, and one should be slightly higher.
-4.  The amounts must be sensible round numbers (e.g., multiples of 100 or 500). For example, if the average is 483, you could suggest 400, 500, and 600. If the average is 1120, you could suggest 1000, 1100, and 1200.
-5.  If the transaction history is empty, you MUST suggest the default amounts: 500, 1000, and 2000.
+-   If the transaction history is empty, you MUST return [500, 1000, 2000].
+-   If the transaction history is not empty, analyze the amounts and suggest three different round numbers that are relevant to the user's past behavior. For example, if the history is [480, 510, 495], you could suggest [400, 500, 600].
 
-Transaction History for {{transactionType}}: {{{transactionHistory}}}
+Transaction Type: {{transactionType}}
+Transaction History: {{{transactionHistory}}}
 
-Return ONLY the three suggested amounts. Do not include any explanations or extra text.`,
+Return ONLY the three suggested amounts. Do not include any other text or explanation.`,
 });
 
 const recommendTransactionAmountFlow = ai.defineFlow(
@@ -60,13 +58,21 @@ const recommendTransactionAmountFlow = ai.defineFlow(
     outputSchema: RecommendTransactionAmountOutputSchema,
   },
   async input => {
+    // If the history is empty, provide default suggestions immediately.
+    if (input.transactionHistory.length === 0) {
+      return {
+        recommendedAmounts: [500, 1000, 2000],
+      };
+    }
+
     const {output} = await prompt(input);
+
     if (output && output.recommendedAmounts && output.recommendedAmounts.length > 0) {
       return {
         recommendedAmounts: output.recommendedAmounts,
       };
     } else {
-      // If the prompt does not produce recommended amounts, return some default values
+      // Fallback in case the AI fails to generate a valid response
       return {
         recommendedAmounts: [500, 1000, 2000],
       };
