@@ -53,7 +53,7 @@ export function TransactionForm({ type }: TransactionFormProps) {
   const amountForm = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      amount: undefined,
+      amount: '' as any,
     },
   });
 
