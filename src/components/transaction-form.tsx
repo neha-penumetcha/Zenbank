@@ -69,7 +69,8 @@ export function TransactionForm({ type }: TransactionFormProps) {
     setIsAiLoading(true);
     const transactionHistory = user.transactions
       .filter(t => t.type === type)
-      .map(t => t.amount);
+      .map(t => t.amount)
+      .slice(0, 3);
     
     const recommendedAmounts = await getAiSuggestions({ transactionHistory, transactionType: type });
     setSuggestions(recommendedAmounts);

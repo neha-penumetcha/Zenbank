@@ -12,7 +12,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const RecommendTransactionAmountInputSchema = z.object({
-  transactionHistory: z.array(z.number()).describe('The user transaction history.'),
+  transactionHistory: z.array(z.number()).describe('The user\'s last 3 transactions of a specific type.'),
   transactionType: z.enum(['deposit', 'withdrawal']).describe('The transaction type.'),
 });
 export type RecommendTransactionAmountInput = z.infer<
@@ -38,12 +38,12 @@ const prompt = ai.definePrompt({
   name: 'recommendTransactionAmountPrompt',
   input: {schema: RecommendTransactionAmountInputSchema},
   output: {schema: RecommendTransactionAmountOutputSchema},
-  prompt: `You are a helpful assistant that suggests transaction amounts. You will be given a user's transaction history for a specific transaction type.
+  prompt: `You are a helpful assistant that suggests transaction amounts. You will be given a user's last 3 transactions for a specific transaction type.
 
 Your task is to return three rounded, sensible transaction amounts based on the provided history.
 
 -   If the transaction history is empty, you MUST return [500, 1000, 2000].
--   If the transaction history is not empty, analyze the amounts and suggest three different round numbers that are relevant to the user's past behavior. For example, if the history is [480, 510, 495], you could suggest [400, 500, 600].
+-   If the transaction history is not empty, analyze the amounts and suggest three different round numbers that are relevant to the user's past behavior. For example, if the history is [480, 510, 495], you could suggest [400, 500, 600]. The suggestions should be reasonably close to the amounts in the history.
 
 Transaction Type: {{transactionType}}
 Transaction History: {{{transactionHistory}}}
