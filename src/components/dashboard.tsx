@@ -68,6 +68,10 @@ export function Dashboard() {
 
   if (!user) return null;
 
+  const getFirstName = (name: string) => {
+    return name.split(' ')[0];
+  }
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -159,11 +163,12 @@ export function Dashboard() {
           <div className="w-full max-w-2xl space-y-6">
             <Card className="shadow-lg">
               <CardHeader>
+                <CardTitle className="text-2xl font-bold">Welcome, {getFirstName(user.name)}!</CardTitle>
                 <CardDescription>Current Balance</CardDescription>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-4xl font-bold tracking-tighter">
+                  <p className="text-4xl font-bold tracking-tighter">
                     {isBalanceVisible ? formatCurrency(user.balance) : '******'}
-                  </CardTitle>
+                  </p>
                   <Button
                     variant="ghost"
                     size="icon"
