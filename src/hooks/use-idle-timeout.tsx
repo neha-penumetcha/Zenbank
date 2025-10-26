@@ -39,7 +39,7 @@ const useIdleTimeout = (
       setRemainingTime((prevTime) => {
         const newTime = prevTime - 1000;
         if (newTime <= 0) {
-          clearInterval(countdownInterval.current);
+          handleIdle();
           return 0;
         }
         return newTime;
