@@ -40,10 +40,10 @@ const prompt = ai.definePrompt({
   output: {schema: RecommendTransactionAmountOutputSchema},
   prompt: `You are a helpful assistant that suggests transaction amounts. You will be given a user's last 3 transactions for a specific transaction type.
 
-Your task is to return three rounded, sensible transaction amounts based on the provided history.
+Your task is to return three sensible transaction amounts based on the provided history.
 
 -   If the transaction history is empty, you MUST return [500, 1000, 2000].
--   If the transaction history is not empty, analyze the amounts and suggest three different round numbers that are relevant to the user's past behavior. For example, if the history is [480, 510, 495], you could suggest [400, 500, 600]. The suggestions should be reasonably close to the amounts in the history.
+-   If the transaction history is not empty, you MUST analyze the amounts and suggest three different round numbers. These numbers should be close to the previous transaction amounts and rounded to the nearest 500 or 1000. For example, if the history is [480, 510, 495], you could suggest [500, 1000, 1500]. If the history is [2100, 2200, 1900], you could suggest [1500, 2000, 2500]. DO NOT return [500, 1000, 2000] if there is a transaction history.
 
 Transaction Type: {{transactionType}}
 Transaction History: {{{transactionHistory}}}
