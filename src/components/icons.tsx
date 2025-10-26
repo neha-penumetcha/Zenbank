@@ -1,21 +1,15 @@
-import type { SVGProps } from "react";
+import Image from 'next/image';
+import type { SVGProps } from 'react';
 
-export function Logo(props: SVGProps<SVGSVGElement>) {
+export function Logo(props: Omit<SVGProps<SVGSVGElement>, 'src'> & { src?: string }) {
+  const { src, ...rest } = props;
   return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M10 8h4" />
-      <path d="M10 16h4" />
-      <path d="m14 8-4 8" />
-    </svg>
+    <Image
+      src="/logo.svg"
+      alt="ZenBank Logo"
+      width={48}
+      height={48}
+      className={props.className}
+    />
   );
 }
