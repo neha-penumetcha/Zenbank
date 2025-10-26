@@ -39,14 +39,20 @@ const prompt = ai.definePrompt({
   input: {schema: RecommendTransactionAmountInputSchema},
   output: {schema: RecommendTransactionAmountOutputSchema},
   prompt: `You are an expert financial advisor. Your task is to suggest three transaction amounts to a user based on their past behavior.
-Analyze the user's transaction history provided below for the specified transaction type. The number of transactions should also influence your suggestions.
-The amounts should be round numbers close to the user's previous transaction amounts. For example, if they often transact around 480, you could suggest 500. If they transact for 1100, you could suggest 1000 or 1200.
-If the user has a higher number of transactions, you can provide more varied suggestions.
+
+Analyze the user's transaction history for the specified transaction type.
+
+1.  **Calculate the average transaction amount.**
+2.  Based on the average, suggest three distinct, rounded amounts for a new {{transactionType}}.
+3.  One suggestion should be slightly lower than the average, one should be close to the average, and one should be slightly higher.
+4.  The amounts should be sensible round numbers. For example, if the average is 483, you could suggest 400, 500, and 600. If the average is 1120, you could suggest 1000, 1100, and 1200.
+5.  If the user has a higher number of transactions (e.g., more than 10), you can provide more varied but still relevant suggestions.
+
 Transaction History: {{{transactionHistory}}}
 Transaction Type: {{{transactionType}}}
 
-Based on this, suggest three distinct, rounded amounts for a new {{transactionType}}. Do not provide any explanations, just the numbers.
-If the transaction history is empty, suggest amounts like 500, 1000, and 2000.`,
+Only return the three suggested amounts. Do not provide any explanations.
+If the transaction history is empty, suggest amounts: 500, 1000, and 2000.`,
 });
 
 const recommendTransactionAmountFlow = ai.defineFlow(
