@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import useIdleTimeout from '@/hooks/use-idle-timeout';
 import {
@@ -12,9 +12,11 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { useTimer } from '@/hooks/use-timer';
 
 export function IdleTimeoutProvider({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
+  const { setRemainingTime: setGlobalRemainingTime } = useTimer();
   
   const handleIdle = () => {
     if (user) {
@@ -22,11 +24,17 @@ export function IdleTimeoutProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const { isWarning, remainingTime } = useIdleTimeout(handleIdle, 5 * 60 * 1000);
+  const IDLE_TIME = 5 * 60 * 1000;
+  const WARNING_TIME = 60 * 1000;
+
+  const { isWarning, remainingTime, reset } = useIdleTimeout(handleIdle, IDLE_TIME, WARNING_TIME);
+  
+  useEffect(() => {
+    setGlobalRemainingTime(remainingTime);
+  }, [remainingTime, setGlobalRemainingTime]);
 
   const handleStay = () => {
-    // This will trigger the activity handler in the hook and reset timers
-    window.dispatchEvent(new Event('mousemove'));
+    reset();
   };
 
   return (
@@ -37,7 +45,7 @@ export function IdleTimeoutProvider({ children }: { children: ReactNode }) {
           <DialogHeader>
             <DialogTitle>Are you still there?</DialogTitle>
             <DialogDescription>
-              You've been inactive for a while. For your security, you will be logged out in {remainingTime} seconds.
+              You've been inactive for a while. For your security, you will be logged out in {Math.ceil(remainingTime / 1000)} seconds.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="sm:justify-between">

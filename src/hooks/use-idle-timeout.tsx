@@ -8,50 +8,46 @@ const useIdleTimeout = (
   warningTime = 60 * 1000
 ) => {
   const [isWarning, setIsWarning] = useState(false);
-  const [remainingTime, setRemainingTime] = useState(0);
+  const [remainingTime, setRemainingTime] = useState(idleTime);
 
   const idleTimer = useRef<NodeJS.Timeout>();
-  const warningTimer = useRef<NodeJS.Timeout>();
   const countdownInterval = useRef<NodeJS.Timer>();
-
-  const handleLogout = useCallback(() => {
-    onIdle();
-  }, [onIdle]);
 
   const stopTimers = useCallback(() => {
     if (idleTimer.current) clearTimeout(idleTimer.current);
-    if (warningTimer.current) clearTimeout(warningTimer.current);
     if (countdownInterval.current) clearInterval(countdownInterval.current);
   }, []);
 
   const startCountdown = useCallback(() => {
-    setIsWarning(true);
-    setRemainingTime(warningTime / 1000);
     countdownInterval.current = setInterval(() => {
       setRemainingTime((prevTime) => {
-        if (prevTime <= 1) {
+        const newTime = prevTime - 1000;
+        if (newTime <= warningTime && !isWarning) {
+            setIsWarning(true);
+        }
+        if (newTime <= 0) {
           clearInterval(countdownInterval.current);
-          handleLogout();
+          onIdle();
           return 0;
         }
-        return prevTime - 1;
+        return newTime;
       });
     }, 1000);
-  }, [warningTime, handleLogout]);
+  }, [warningTime, onIdle, isWarning]);
 
-  const resetTimers = useCallback(() => {
+  const reset = useCallback(() => {
     stopTimers();
     setIsWarning(false);
-    setRemainingTime(0);
-    warningTimer.current = setTimeout(startCountdown, idleTime - warningTime);
-  }, [stopTimers, startCountdown, idleTime, warningTime]);
+    setRemainingTime(idleTime);
+    startCountdown();
+  }, [stopTimers, idleTime, startCountdown]);
 
   const handleUserActivity = useCallback(() => {
-    resetTimers();
-  }, [resetTimers]);
+    reset();
+  }, [reset]);
 
   useEffect(() => {
-    resetTimers();
+    reset();
 
     const events = ['mousemove', 'mousedown', 'keypress', 'scroll', 'touchstart'];
     events.forEach(event => window.addEventListener(event, handleUserActivity));
@@ -60,9 +56,11 @@ const useIdleTimeout = (
       stopTimers();
       events.forEach(event => window.removeEventListener(event, handleUserActivity));
     };
-  }, [resetTimers, stopTimers, handleUserActivity]);
+  }, [reset, stopTimers, handleUserActivity]);
+  
+  const formattedRemainingTime = Math.ceil(remainingTime / 1000);
 
-  return { isWarning, remainingTime };
+  return { isWarning, remainingTime: formattedRemainingTime, reset };
 };
 
 export default useIdleTimeout;

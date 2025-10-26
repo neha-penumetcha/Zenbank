@@ -47,6 +47,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useTimer } from '@/hooks/use-timer';
 
 const pinSchema = z.object({
   pin: z.string().length(4, { message: 'PIN must be 4 digits.' }),
@@ -58,6 +59,7 @@ export function Dashboard() {
   const [isBalanceVisible, setIsBalanceVisible] = useState(false);
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { remainingTime } = useTimer();
 
   const pinForm = useForm<z.infer<typeof pinSchema>>({
     resolver: zodResolver(pinSchema),
@@ -70,13 +72,19 @@ export function Dashboard() {
 
   const getFirstName = (name: string) => {
     return name.split(' ')[0];
-  }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
     }).format(amount);
+  };
+  
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
   const handlePinSubmit = (values: z.infer<typeof pinSchema>) => {
@@ -116,6 +124,11 @@ export function Dashboard() {
             <h1 className="text-xl font-bold">ZenBank</h1>
           </div>
           <div className="flex items-center gap-4">
+             <div className="flex items-center gap-2">
+              <span className="font-mono text-sm text-muted-foreground">
+                {formatTime(remainingTime)}
+              </span>
+            </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -163,7 +176,9 @@ export function Dashboard() {
           <div className="w-full max-w-2xl space-y-6">
             <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold">Welcome, {getFirstName(user.name)}!</CardTitle>
+                <CardTitle className="text-2xl font-bold">
+                  Welcome, {getFirstName(user.name)}!
+                </CardTitle>
                 <CardDescription>Current Balance</CardDescription>
                 <div className="flex items-center justify-between">
                   <p className="text-4xl font-bold tracking-tighter">
@@ -180,9 +195,7 @@ export function Dashboard() {
                       <Eye className="h-6 w-6" />
                     )}
                     <span className="sr-only">
-                      {isBalanceVisible
-                        ? 'Hide balance'
-                        : 'Show balance'}
+                      {isBalanceVisible ? 'Hide balance' : 'Show balance'}
                     </span>
                   </Button>
                 </div>
