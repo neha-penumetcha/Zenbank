@@ -10,21 +10,24 @@ const useIdleTimeout = (
   const [isWarning, setIsWarning] = useState(false);
   const [remainingTime, setRemainingTime] = useState(idleTime);
 
-  const idleTimer = useRef<NodeJS.Timeout>();
   const countdownInterval = useRef<NodeJS.Timer>();
 
   const stopTimers = useCallback(() => {
-    if (idleTimer.current) clearTimeout(idleTimer.current);
     if (countdownInterval.current) clearInterval(countdownInterval.current);
   }, []);
 
   const startCountdown = useCallback(() => {
+    stopTimers(); // Ensure no multiple intervals are running
+    setRemainingTime(idleTime);
+
     countdownInterval.current = setInterval(() => {
       setRemainingTime((prevTime) => {
         const newTime = prevTime - 1000;
+        
         if (newTime <= warningTime && !isWarning) {
             setIsWarning(true);
         }
+        
         if (newTime <= 0) {
           clearInterval(countdownInterval.current);
           onIdle();
@@ -33,14 +36,13 @@ const useIdleTimeout = (
         return newTime;
       });
     }, 1000);
-  }, [warningTime, onIdle, isWarning]);
+  }, [idleTime, warningTime, onIdle, isWarning, stopTimers]);
+
 
   const reset = useCallback(() => {
-    stopTimers();
     setIsWarning(false);
-    setRemainingTime(idleTime);
     startCountdown();
-  }, [stopTimers, idleTime, startCountdown]);
+  }, [startCountdown]);
 
   const handleUserActivity = useCallback(() => {
     reset();
@@ -56,7 +58,8 @@ const useIdleTimeout = (
       stopTimers();
       events.forEach(event => window.removeEventListener(event, handleUserActivity));
     };
-  }, [reset, stopTimers, handleUserActivity]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   const formattedRemainingTime = Math.ceil(remainingTime / 1000);
 
