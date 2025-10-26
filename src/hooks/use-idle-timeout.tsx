@@ -13,30 +13,37 @@ const useIdleTimeout = (
   const countdownInterval = useRef<NodeJS.Timer>();
 
   const stopTimers = useCallback(() => {
-    if (countdownInterval.current) clearInterval(countdownInterval.current);
+    if (countdownInterval.current) {
+      clearInterval(countdownInterval.current);
+      countdownInterval.current = undefined;
+    }
   }, []);
 
+  const handleIdle = useCallback(() => {
+    stopTimers();
+    onIdle();
+  }, [onIdle, stopTimers]);
+
   const startCountdown = useCallback(() => {
-    stopTimers(); // Ensure no multiple intervals are running
+    stopTimers();
     setRemainingTime(idleTime);
 
     countdownInterval.current = setInterval(() => {
       setRemainingTime((prevTime) => {
         const newTime = prevTime - 1000;
         
-        if (newTime <= warningTime && !isWarning) {
+        if (newTime <= warningTime) {
             setIsWarning(true);
         }
         
         if (newTime <= 0) {
-          clearInterval(countdownInterval.current);
-          onIdle();
+          handleIdle();
           return 0;
         }
         return newTime;
       });
     }, 1000);
-  }, [idleTime, warningTime, onIdle, isWarning, stopTimers]);
+  }, [idleTime, warningTime, stopTimers, handleIdle]);
 
 
   const reset = useCallback(() => {
