@@ -22,21 +22,27 @@ export function IdleTimeoutProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const isIdle = useIdleTimeout(handleIdle, 5 * 60 * 1000);
+  const { isWarning, remainingTime } = useIdleTimeout(handleIdle, 5 * 60 * 1000);
+
+  const handleStay = () => {
+    // This will trigger the activity handler in the hook and reset timers
+    window.dispatchEvent(new Event('mousemove'));
+  };
 
   return (
     <>
       {children}
-      <Dialog open={isIdle && !!user}>
+      <Dialog open={isWarning && !!user}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Session Expired</DialogTitle>
+            <DialogTitle>Are you still there?</DialogTitle>
             <DialogDescription>
-              You have been logged out due to inactivity. Please log in again to continue.
+              You've been inactive for a while. For your security, you will be logged out in {remainingTime} seconds.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button onClick={() => window.location.reload()}>Log In</Button>
+          <DialogFooter className="sm:justify-between">
+            <Button variant="outline" onClick={logout}>Log Out Now</Button>
+            <Button onClick={handleStay}>I'm still here</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
