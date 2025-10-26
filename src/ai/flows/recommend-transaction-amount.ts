@@ -38,21 +38,19 @@ const prompt = ai.definePrompt({
   name: 'recommendTransactionAmountPrompt',
   input: {schema: RecommendTransactionAmountInputSchema},
   output: {schema: RecommendTransactionAmountOutputSchema},
-  prompt: `You are an expert financial advisor. Your task is to suggest three transaction amounts to a user based on their past behavior.
+  prompt: `You are an expert financial advisor. Your task is to suggest three transaction amounts to a user based on their past behavior for a specific transaction type.
 
-Analyze the user's transaction history for the specified transaction type.
+Analyze the user's transaction history provided below for the specified transaction type.
 
-1.  **Calculate the average transaction amount.**
-2.  Based on the average, suggest three distinct, rounded amounts for a new {{transactionType}}.
-3.  One suggestion should be slightly lower than the average, one should be close to the average, and one should be slightly higher.
-4.  The amounts should be sensible round numbers. For example, if the average is 483, you could suggest 400, 500, and 600. If the average is 1120, you could suggest 1000, 1100, and 1200.
-5.  If the user has a higher number of transactions (e.g., more than 10), you can provide more varied but still relevant suggestions.
+1.  **Calculate the average transaction amount** from the history.
+2.  Based on this average, suggest three distinct, rounded amounts for a new {{transactionType}}.
+3.  The suggestions should be close to the user's average. One amount should be slightly lower, one should be near the average, and one should be slightly higher.
+4.  The amounts must be sensible round numbers (e.g., multiples of 100 or 500). For example, if the average is 483, you could suggest 400, 500, and 600. If the average is 1120, you could suggest 1000, 1100, and 1200.
+5.  If the transaction history is empty, you MUST suggest the default amounts: 500, 1000, and 2000.
 
-Transaction History: {{{transactionHistory}}}
-Transaction Type: {{{transactionType}}}
+Transaction History for {{transactionType}}: {{{transactionHistory}}}
 
-Only return the three suggested amounts. Do not provide any explanations.
-If the transaction history is empty, suggest amounts: 500, 1000, and 2000.`,
+Return ONLY the three suggested amounts. Do not include any explanations or extra text.`,
 });
 
 const recommendTransactionAmountFlow = ai.defineFlow(
