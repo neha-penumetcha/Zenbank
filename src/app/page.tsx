@@ -21,17 +21,8 @@ export default function HomePage() {
     }
   }, [user, authLoading, router, isClient]);
 
-  if (!isClient || authLoading) {
+  if (!isClient || authLoading || !user) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    // Still loading or redirecting, show loader to prevent content flash
-     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
