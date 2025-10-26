@@ -64,6 +64,14 @@ Transaction History: {{{transactionHistory}}}
 Return ONLY the three suggested amounts. Do not include any other text or explanation.`,
 });
 
+const areArraysEqual = (a: number[], b: number[]): boolean => {
+    if (a.length !== b.length) return false;
+    const sortedA = [...a].sort((x, y) => x - y);
+    const sortedB = [...b].sort((x, y) => x - y);
+    return sortedA.every((value, index) => value === sortedB[index]);
+};
+
+
 const recommendTransactionAmountFlow = ai.defineFlow(
   {
     name: 'recommendTransactionAmountFlow',
@@ -80,27 +88,45 @@ const recommendTransactionAmountFlow = ai.defineFlow(
 
     const {output} = await prompt(input);
 
+    const fallback = () => {
+        const avg = input.transactionHistory.reduce((a, b) => a + b, 0) / input.transactionHistory.length;
+        let suggestion1 = Math.round(avg / 500) * 500;
+        if(suggestion1 === 0) suggestion1 = 500;
+
+        // If we have previous suggestions, try to make new ones
+        if (input.previousSuggestions && input.previousSuggestions.includes(suggestion1)) {
+            suggestion1 += 500;
+        }
+
+        const suggestions = [suggestion1, suggestion1 + 500, suggestion1 + 1000].filter(v => v > 0);
+        // Ensure suggestions are different from previous ones
+        if (input.previousSuggestions && areArraysEqual(suggestions, input.previousSuggestions)) {
+            return {
+                recommendedAmounts: suggestions.map(s => s + 250)
+            }
+        }
+        return {
+            recommendedAmounts: suggestions,
+        };
+    }
+
     if (output && output.recommendedAmounts && output.recommendedAmounts.length > 0) {
       // Basic check to see if the AI is just returning the default values.
-      const isDefault = JSON.stringify(output.recommendedAmounts.sort((a,b) => a-b)) === JSON.stringify([500, 1000, 2000]);
-      if (isDefault) {
-         // Fallback if AI returns default values for a non-empty history
-        const avg = input.transactionHistory.reduce((a, b) => a + b, 0) / input.transactionHistory.length;
-        const suggestion1 = Math.round(avg / 500) * 500;
-        return {
-            recommendedAmounts: [suggestion1, suggestion1 + 500, suggestion1 + 1000].filter(v => v > 0),
-        };
+      const isDefault = areArraysEqual(output.recommendedAmounts, [500, 1000, 2000]);
+
+      // Check if the AI returned the same suggestions as before
+      const isRepeated = input.previousSuggestions && areArraysEqual(output.recommendedAmounts, input.previousSuggestions);
+
+      if ((isDefault && input.transactionHistory.length > 0) || isRepeated) {
+         // Fallback if AI returns default values or repeated values
+        return fallback();
       }
       return {
         recommendedAmounts: output.recommendedAmounts,
       };
     } else {
       // Fallback in case the AI fails to generate a valid response
-        const avg = input.transactionHistory.reduce((a, b) => a + b, 0) / input.transactionHistory.length;
-        const suggestion1 = Math.round(avg / 500) * 500;
-        return {
-            recommendedAmounts: [suggestion1, suggestion1 + 500, suggestion1 + 1000].filter(v => v > 0),
-        };
+      return fallback();
     }
   }
 );
