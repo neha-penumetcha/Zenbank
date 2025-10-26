@@ -3,7 +3,7 @@
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Loader2, User, Mail, Phone, Home, ArrowLeft, KeyRound } from 'lucide-react';
+import { Loader2, User, Mail, Phone, Home, ArrowLeft, KeyRound, Edit, Save } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -58,12 +58,20 @@ const changePinSchema = z
     path: ['confirmPin'],
   });
 
+const profileSchema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  email: z.string().email({ message: 'Please enter a valid email.' }),
+  phone: z.string().min(10, { message: 'Phone number must be at least 10 digits.' }),
+  address: z.string().min(5, { message: 'Address must be at least 5 characters.' }),
+});
+
 export default function ProfilePage() {
   const { user, loading, updateUser } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const pinForm = useForm<z.infer<typeof changePinSchema>>({
     resolver: zodResolver(changePinSchema),
@@ -73,6 +81,28 @@ export default function ProfilePage() {
       confirmPin: '',
     },
   });
+
+  const profileForm = useForm<z.infer<typeof profileSchema>>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      name: user?.name || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+      address: user?.address || '',
+    }
+  });
+  
+  useEffect(() => {
+    if (user) {
+      profileForm.reset({
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+      });
+    }
+  }, [user, profileForm]);
+
 
   useEffect(() => {
     if (!loading && !user) {
@@ -119,6 +149,20 @@ export default function ProfilePage() {
     setIsUpdating(false);
   };
 
+  const handleProfileUpdate = (values: z.infer<typeof profileSchema>) => {
+    setIsUpdating(true);
+    updateUser({
+      ...user,
+      ...values,
+    });
+    toast({
+      title: 'Success',
+      description: 'Your profile has been updated.',
+    });
+    setIsEditMode(false);
+    setIsUpdating(false);
+  }
+
 
   return (
     <>
@@ -137,62 +181,148 @@ export default function ProfilePage() {
         </header>
         <main className="flex flex-1 items-center justify-center p-4 sm:p-6 md:p-8">
           <Card className="w-full max-w-2xl shadow-lg">
-            <CardHeader>
-              <div className="flex items-center gap-4">
-                <Avatar className="h-20 w-20 border-2 border-primary">
-                  <AvatarImage
-                    src={`https://api.dicebear.com/8.x/initials/svg?seed=${user.name}`}
-                    alt={user.name}
-                  />
-                  <AvatarFallback>
-                    {user.name?.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <CardTitle className="text-3xl font-bold">
-                    {user.name}
-                  </CardTitle>
-                  <CardDescription className="text-lg">
-                    @{user.username}
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="mt-4 space-y-6">
-              <div className="flex items-center gap-4">
-                <Mail className="h-6 w-6 text-muted-foreground" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Email
-                  </p>
-                  <p className="font-semibold">{user.email}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <Phone className="h-6 w-6 text-muted-foreground" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Phone Number
-                  </p>
-                  <p className="font-semibold">{user.phone}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <Home className="h-6 w-6 text-muted-foreground" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Address
-                  </p>
-                  <p className="font-semibold">{user.address}</p>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button onClick={() => setIsPinModalOpen(true)} variant="outline">
-                <KeyRound className="mr-2 h-4 w-4" />
-                Change PIN
-              </Button>
-            </CardFooter>
+            <Form {...profileForm}>
+              <form onSubmit={profileForm.handleSubmit(handleProfileUpdate)}>
+                <CardHeader>
+                  <div className="flex items-center gap-4">
+                    <Avatar className="h-20 w-20 border-2 border-primary">
+                      <AvatarImage
+                        src={`https://api.dicebear.com/8.x/initials/svg?seed=${user.name}`}
+                        alt={user.name}
+                      />
+                      <AvatarFallback>
+                        {user.name?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="w-full">
+                      {isEditMode ? (
+                        <FormField
+                          control={profileForm.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Full Name</FormLabel>
+                              <FormControl>
+                                <Input className="text-3xl font-bold" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      ) : (
+                        <>
+                          <CardTitle className="text-3xl font-bold">
+                            {user.name}
+                          </CardTitle>
+                          <CardDescription className="text-lg">
+                            @{user.username}
+                          </CardDescription>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="mt-4 space-y-6">
+                  <div className="flex items-center gap-4">
+                    <Mail className="h-6 w-6 text-muted-foreground" />
+                    <div className="flex-1">
+                      {isEditMode ? (
+                        <FormField
+                          control={profileForm.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <Input type="email" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      ) : (
+                        <>
+                          <p className="text-sm font-medium text-muted-foreground">Email</p>
+                          <p className="font-semibold">{user.email}</p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Phone className="h-6 w-6 text-muted-foreground" />
+                    <div className="flex-1">
+                      {isEditMode ? (
+                        <FormField
+                          control={profileForm.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Phone</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      ) : (
+                        <>
+                           <p className="text-sm font-medium text-muted-foreground">Phone Number</p>
+                           <p className="font-semibold">{user.phone}</p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Home className="h-6 w-6 text-muted-foreground" />
+                    <div className="flex-1">
+                      {isEditMode ? (
+                         <FormField
+                          control={profileForm.control}
+                          name="address"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Address</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      ) : (
+                        <>
+                          <p className="text-sm font-medium text-muted-foreground">Address</p>
+                          <p className="font-semibold">{user.address}</p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  {isEditMode ? (
+                    <div className="flex gap-2">
+                       <Button type="submit" disabled={isUpdating}>
+                        {isUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                        Save Changes
+                      </Button>
+                      <Button variant="outline" onClick={() => setIsEditMode(false)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button onClick={() => setIsEditMode(true)} variant="outline">
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit Profile
+                    </Button>
+                  )}
+                  <Button onClick={() => setIsPinModalOpen(true)} variant="outline">
+                    <KeyRound className="mr-2 h-4 w-4" />
+                    Change PIN
+                  </Button>
+                </CardFooter>
+              </form>
+            </Form>
           </Card>
         </main>
       </div>
