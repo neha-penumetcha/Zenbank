@@ -12,8 +12,18 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const RecommendTransactionAmountInputSchema = z.object({
-  transactionHistory: z.array(z.number()).describe('The user\'s last 3 transactions of a specific type.'),
-  transactionType: z.enum(['deposit', 'withdrawal']).describe('The transaction type.'),
+  transactionHistory: z
+    .array(z.number())
+    .describe("The user's last 3 transactions of a specific type."),
+  transactionType: z
+    .enum(['deposit', 'withdrawal'])
+    .describe('The transaction type.'),
+  previousSuggestions: z
+    .array(z.number())
+    .optional()
+    .describe(
+      'A list of previously suggested amounts to avoid suggesting them again.'
+    ),
 });
 export type RecommendTransactionAmountInput = z.infer<
   typeof RecommendTransactionAmountInputSchema
@@ -44,6 +54,9 @@ Your task is to return three sensible transaction amounts based on the provided 
 
 -   If the transaction history is empty, you MUST return [500, 1000, 2000].
 -   If the transaction history is not empty, you MUST analyze the amounts and suggest three different round numbers. These numbers should be close to the previous transaction amounts and rounded to the nearest 500 or 1000. For example, if the history is [480, 510, 495], you could suggest [500, 1000, 1500]. If the history is [2100, 2200, 1900], you could suggest [1500, 2000, 2500]. DO NOT return [500, 1000, 2000] if there is a transaction history.
+{{#if previousSuggestions}}
+-   The user has already seen the following suggestions: {{{previousSuggestions}}}. You MUST provide different suggestions this time.
+{{/if}}
 
 Transaction Type: {{transactionType}}
 Transaction History: {{{transactionHistory}}}

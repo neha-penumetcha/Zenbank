@@ -72,7 +72,11 @@ export function TransactionForm({ type }: TransactionFormProps) {
       .map(t => t.amount)
       .slice(0, 3);
     
-    const recommendedAmounts = await getAiSuggestions({ transactionHistory, transactionType: type });
+    const recommendedAmounts = await getAiSuggestions({ 
+      transactionHistory, 
+      transactionType: type,
+      previousSuggestions: suggestions 
+    });
     setSuggestions(recommendedAmounts);
     setIsAiLoading(false);
   };
@@ -218,6 +222,7 @@ export function TransactionForm({ type }: TransactionFormProps) {
                         className="text-center text-2xl tracking-[1rem]"
                         {...field}
                       />
+
                     </FormControl>
                     <FormMessage />
                   </FormItem>
