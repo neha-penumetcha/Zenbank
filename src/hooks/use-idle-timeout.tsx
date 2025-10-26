@@ -51,7 +51,7 @@ const useIdleTimeout = (
   useEffect(() => {
     reset();
 
-    const events = ['mousemove', 'mousedown', 'keypress', 'scroll', 'touchstart'];
+    const events = ['mousedown', 'keypress', 'scroll', 'touchstart'];
     events.forEach(event => window.addEventListener(event, handleUserActivity));
 
     return () => {
