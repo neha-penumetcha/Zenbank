@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +9,8 @@ import { Logo } from '@/components/icons';
 import { LogOut, UserCircle } from 'lucide-react';
 import { TransactionForm } from './transaction-form';
 import { TransactionHistory } from './transaction-history';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+
 
 export function Dashboard() {
   const { user, logout } = useAuth();
@@ -29,10 +32,15 @@ export function Dashboard() {
           <h1 className="text-xl font-bold">ZenBank</h1>
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <UserCircle className="h-6 w-6" />
-            <span className="font-medium">{user.username}</span>
-          </div>
+          <Button variant="ghost" asChild>
+            <Link href="/profile" className="flex items-center gap-2">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={`https://api.dicebear.com/8.x/initials/svg?seed=${user.name}`} alt={user.name} />
+                <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <span className="font-medium">{user.username}</span>
+            </Link>
+          </Button>
           <Button variant="ghost" size="icon" onClick={logout} aria-label="Logout">
             <LogOut className="h-5 w-5" />
           </Button>

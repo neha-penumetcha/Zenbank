@@ -8,8 +8,14 @@ export type Transaction = {
 export type User = {
   id: string;
   username: string;
-  password;
-  string;
+  password?: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  pin: string;
   balance: number;
   transactions: Transaction[];
 };
+
+export type SignupData = Omit<User, 'id' | 'balance' | 'transactions'> & { password: NonNullable<User['password']> };

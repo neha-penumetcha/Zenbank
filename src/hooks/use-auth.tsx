@@ -9,7 +9,7 @@ import {
   useCallback,
 } from 'react';
 import { useRouter } from 'next/navigation';
-import type { User, Transaction } from '@/lib/types';
+import type { User, SignupData } from '@/lib/types';
 import { useToast } from './use-toast';
 
 const AUTH_STORAGE_KEY = 'zenbank-users';
@@ -19,7 +19,7 @@ interface AuthContextType {
   loading: boolean;
   login: (username: string, pass: string) => Promise<boolean>;
   logout: () => void;
-  signup: (username: string, pass: string) => Promise<boolean>;
+  signup: (data: SignupData) => Promise<boolean>;
   updateUser: (updatedUser: User) => void;
 }
 
@@ -111,10 +111,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signup = async (username: string, pass: string): Promise<boolean> => {
+  const signup = async (data: SignupData): Promise<boolean> => {
     const users = getUsersFromStorage();
     const existingUser = users.find(
-      (u) => u.username.toLowerCase() === username.toLowerCase()
+      (u) => u.username.toLowerCase() === data.username.toLowerCase()
     );
 
     if (existingUser) {
@@ -128,8 +128,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const newUser: User = {
       id: Date.now().toString(),
-      username,
-      password: pass,
+      username: data.username,
+      password: data.password,
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      address: data.address,
+      pin: data.pin,
       balance: 1000, // Starting balance
       transactions: [],
     };
