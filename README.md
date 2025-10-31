@@ -1,5 +1,5 @@
-# Firebase Studio
+**ZENBANK**
 
-This is a NextJS starter in Firebase Studio.
+The purpose of this document is to specify all functional and non-functional requirements for the ZenBank ATM Simulation System. This system is implemented as a modern, web-based banking platform that provides authenticated users (customers) with a realistic environment to manage simulated funds. The platform's goal is to offer core financial functionalities—login, withdrawal, deposit, transaction history, and profile management—through a user-friendly and aesthetically pleasing interface, as evidenced by the ZenBank UI.
 
-To get started, take a look at src/app/page.tsx.
+The ZenBank system is a standalone web application accessible via URL endpoints (implied by the original request and the login/dashboard/profile views). The scope covers the entire customer lifecycle, from initial authentication to viewing account activity and personal details. The system uses a contemporary two-factor authentication approach (Username and Password) instead of the traditional Card/PIN entry typical of physical ATMs, reflecting a modern banking portal simulation.
